@@ -21,33 +21,74 @@ int main(int argc, char *argv[]) {
     std::cout<<"detection\n";
     signal(SIGINT, sig_handler);
 
+	extern char *optarg;
+	extern int optind;
 
-    std::string net = "yolo3_berkeley.rt";
-    std::string input = "../demo/yolo_test.mp4";
+    std::string net = "";
+    std::string input = "";
+    char* ntype = "x";
+    int n_classes = -1;
+    int n_batch = 0;
+    int c;
+    // Path to TensorRT .rt runtime file
+    // Path to image or video input
+    // Flaggable NN architecture type (Yolo, ResNET, etc.)
+    // Flaggable Batch Size (0 to 8)
+    // Flaggable number of classes (1 to any)
+    // Flag to squelch GUI previewing of result
+    static char usage[] = "usage: %s -r network -i image -n network_type -b batch_size -c num_classes -s hide_gui\n";
 
+    while((c = getopt(argc, argv, "r:i:nbcs")) != -1){
+        switch(c) {
+            case 'r':
+                net = optarg;
+                break;
+            case 'i':
+                input = optarg;
+                break;
+            case 'n':
+                ntype = optarg;
+                break;
+            case 'b':
+                n_batch = atoi(optarg);
+                if(n_batch < 1 || n_batch > 64){
+                    FatalError("FatalError: Inference Batch Size invalid (batch size must be greater than 0, but less than 64)");
+                }
+                break;
+            case 'c':
+                n_classes = atoi(optarg);
+                if(n_classes < 1){
+                    FatalError("FatalError: Number of classes < 1");
+                }
+                break;
+            case 's':
+                SAVE_RESULT = true;
+                std::cout<<"GUI preview disabled, output will be saved to disk\n";
+                break;
+        }
+    }
 
-    if(argc > 1)
-        net = argv[1]; 
-    if(argc > 2)
-        input = argv[2]; 
-    char ntype = 'y';
-    if(argc > 3)
-        ntype = argv[3][0]; 
-    int n_classes = 80;
-    if(argc > 4)
-        n_classes = atoi(argv[4]); 
-    int n_batch = 1;
-    if(argc > 5)
-        n_batch = atoi(argv[5]); 
-    bool show = true;
-    if(argc > 6)
-        show = atoi(argv[6]); 
+    // Check program inputs
+    if (net.empty()) {	/* -n flag is mandatory, need path to NN */
+		fprintf(stderr, "%s: missing -r option, path to net mandatory\n", argv[0]);
+		fprintf(stderr, usage, argv[0]);
+		exit(1);
+	} else if(input.empty()){
+        fprintf(stderr, "%s: missing -i option, path to image/video mandatory\n", argv[0]);
+		fprintf(stderr, usage, argv[0]);
+		exit(1);
+    } else if (ntype == "x") {
+        fprintf(stderr, "%s: missing -n option, neural network type option is mandatory\n", argv[0]);
+		fprintf(stderr, usage, argv[0]);
+		exit(1);
+    } else if ((optind+6) > argc) {	
+		/* need at least one argument (change +1 to +2 for two, etc. as needeed) */
 
-    if(n_batch < 1 || n_batch > 64)
-        FatalError("Batch dim not supported");
-
-    if(!show)
-        SAVE_RESULT = true;
+		printf("optind = %d, argc=%d\n", optind, argc);
+		fprintf(stderr, "%s: Not enough arguments to run tkDNN\n", argv[0]);
+		fprintf(stderr, usage, argv[0]);
+		exit(1);
+	}
 
     tk::dnn::Yolo3Detection yolo;
     tk::dnn::CenternetDetection cnet;
@@ -55,21 +96,18 @@ int main(int argc, char *argv[]) {
 
     tk::dnn::DetectionNN *detNN;  
 
-    switch(ntype)
-    {
-        case 'y':
-            detNN = &yolo;
-            break;
-        case 'c':
-            detNN = &cnet;
-            break;
-        case 'm':
-            detNN = &mbnet;
-            n_classes++;
-            break;
-        default:
-        FatalError("Network type not allowed (3rd parameter)\n");
+    if(ntype == "yolo"){
+        detNN = &yolo;
+    } else if (ntype == "centernet") {
+        detNN = &cnet;
+    } else if (ntype == "mbnet") {
+        detNN = &mbnet;
+        n_classes++;
+    } else {
+        FatalError("Network type invalid, allowed networks: \"yolo\", \"centernet\", \"mbnet\" \n");
     }
+
+    std::cout<<"DEBUG: input flags valid, proceeding..." << std::endl;
 
     detNN->init(net, n_classes, n_batch);
 
@@ -81,6 +119,8 @@ int main(int argc, char *argv[]) {
     else
         std::cout<<"camera started\n";
 
+    // Stopped here: Figure out how to capture the details of an input image. 
+
     cv::VideoWriter resultVideo;
     if(SAVE_RESULT) {
         int w = cap.get(cv::CAP_PROP_FRAME_WIDTH);
@@ -89,7 +129,7 @@ int main(int argc, char *argv[]) {
     }
 
     cv::Mat frame;
-    if(show)
+    if(!SAVE_RESULT)
         cv::namedWindow("detection", cv::WINDOW_NORMAL);
 
     std::vector<cv::Mat> batch_frame;
@@ -116,7 +156,7 @@ int main(int argc, char *argv[]) {
         detNN->update(batch_dnn_input, n_batch);
         detNN->draw(batch_frame);
 
-        if(show){
+        if(!SAVE_RESULT){
             for(int bi=0; bi< n_batch; ++bi){
                 cv::imshow("detection", batch_frame[bi]);
                 cv::waitKey(1);

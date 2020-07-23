@@ -113,6 +113,9 @@ target_link_libraries(map_demo tkDNN)
 add_executable(demo demo/demo/demo.cpp)
 target_link_libraries(demo tkDNN)
 
+add_executable(tkdnn_yolov4 demo/demo/tkdnn_yolov4.cpp)
+target_link_libraries(demo tkDNN)
+
 #-------------------------------------------------------------------------------
 # Install
 #-------------------------------------------------------------------------------

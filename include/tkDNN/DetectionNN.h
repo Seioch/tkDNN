@@ -21,6 +21,15 @@
 #include <opencv2/cudaarithm.hpp>
 #endif
 
+// Adapted from wrapper.cc
+struct RawDetection {
+    std::string feature_name;
+    float confidence;
+    int32_t x1;
+    int32_t y1;
+    int32_t x2;
+    int32_t y2;
+};
 
 namespace tk { namespace dnn {
 
@@ -129,7 +138,7 @@ class DetectionNN {
                 stats.push_back(t_ns);
                 if(save_times) *times<<t_ns<<";";
             }
-
+            // This doesn't clear the batchDetected permanently. postprocess actually refills it with the postprocessed BBs
             batchDetected.clear();
             {
                 TKDNN_TSTART
@@ -175,7 +184,44 @@ class DetectionNN {
                 }
             }
         }
+        /**
+         * Convert the batch of detections back to Darknet format, return as vector.
+         *
+         * @param frames orginal frame to draw bounding box on.
+         */
+        std::vector<RawDetection> getRawDetections(std::vector<cv::Mat>& frames) {
+            tk::dnn::box b; // temp reference to batchDetected at batch bi and index i
+            // int x0, w, x1, y0, h, y1;
+            // int objClass;
+            // std::string det_class;
+            std::vector<RawDetection> raw_detections;
 
+            for(int bi=0; bi<frames.size(); ++bi){
+                // compute dets
+                for(int i=0; i<batchDetected[bi].size(); i++) {
+                    RawDetection raw_detection;
+                    b                               = batchDetected[bi][i];
+                    raw_detection.x1                = b.x;
+                    raw_detection.x2                = b.x + b.w;
+                    raw_detection.y1                = b.y;
+                    raw_detection.y2                = b.y + b.h;
+                    raw_detection.feature_name      = classesNames[b.cl];
+                    raw_detection.confidence        = b.prob;
+
+                    raw_detections.push_back(raw_detection);
+                }
+            }
+            // DEBUG ONLY
+            std::cout << "Number of raw detections found: " << raw_detections.size() << std::endl;
+            return raw_detections;
+        }
+        /**
+         * Return the vector of bounding boxes. No other things done to it
+         * besides postprocessing in Yolo
+         */
+        std::vector<std::vector<tk::dnn::box>> getRawBoundingBoxes(){
+            return batchDetected;
+        }
 };
 
 }}

@@ -222,6 +222,14 @@ class DetectionNN {
         std::vector<std::vector<tk::dnn::box>> getRawBoundingBoxes(){
             return batchDetected;
         }
+
+        /**
+         * Return the inference speeds per frame in the batch
+         */
+        std::vector<double> getInferenceSpeeds(){
+            return stats;
+        }
+
 };
 
 }}

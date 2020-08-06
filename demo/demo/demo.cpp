@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <signal.h>
 #include <stdlib.h>     /* srand, rand */
 #include <unistd.h>
@@ -128,6 +129,14 @@ int main(int argc, char *argv[]) {
 
     std::cout<<"detection end\n";   
     double mean = 0; 
+
+    // Write performance to file
+    std::ofstream outputfile;
+    outputfile.open("performance.csv");
+    for(int i=0; i<detNN->stats.size(); i++){
+        outputfile << detNN->stats[i] << ",\n";
+    }
+    outputfile.close();
     
     std::cout<<COL_GREENB<<"\n\nTime stats:\n";
     std::cout<<"Min: "<<*std::min_element(detNN->stats.begin(), detNN->stats.end())/n_batch<<" ms\n";    

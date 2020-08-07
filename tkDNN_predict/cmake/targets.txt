@@ -1,0 +1,8 @@
+targets/frame46.png
+targets/frame129.png
+targets/frame164.png
+targets/frame214.png
+targets/frame257.png
+targets/frame273.png
+targets/frame286.png
+targets/frame298.png

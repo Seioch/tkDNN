@@ -1,0 +1,4 @@
+/home/kchang/ascope/nn/tkdnn_predict/cmake/CMakeFiles/edit_cache.dir
+/home/kchang/ascope/nn/tkdnn_predict/cmake/CMakeFiles/darknet_to_tensorrt.dir
+/home/kchang/ascope/nn/tkdnn_predict/cmake/CMakeFiles/rebuild_cache.dir
+/home/kchang/ascope/nn/tkdnn_predict/cmake/CMakeFiles/tkdnn_wrapper.dir

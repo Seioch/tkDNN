@@ -14,6 +14,6 @@ build/
 *.table
 demo/COCO_val2017
 demo/BDD100K_val
-demo/cmake/
+demo/cmake
 demo/tkDNN_predict/cmake
 demo/tkDNN_predict/tkdnn

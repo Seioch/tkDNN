@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <mutex>
+#include <math.h>       /* ceil */
 
 // opencv stuff should probably stay for image loading for debugging only
 #include <opencv2/core/core.hpp>
@@ -63,8 +64,8 @@ int main(int argc, char* argv[]){
     if(argc < 4){
         FatalError("Not enough parameters, must provide in order: path to yolov4 rt file, text file with list of images, batch size, number of classes");
     }
-    // Set batch size from command line
-    int batch_size = atoi(argv[3]);
+    // Set batch size from command lines
+    float batch_size = atoi(argv[3]);
 
     // Initialize Yolo detection objects
     tk::dnn::Yolo3Detection yolo;
@@ -83,18 +84,22 @@ int main(int argc, char* argv[]){
     std::cout << "Loaded " << dnnInput.size() << " images from file " << argv[2] << std::endl;
 
     // Pop the first 4 items off the loaded images up to a batch_size, then feed batch into NN
-    int num_batches = (int)(dnnInput.size()/batch_size); // Calculate the number of batches, rounded down in case things go awry
+    float dnnInputSize = dnnInput.size();
+    int num_batches = std::ceil(dnnInputSize/batch_size); // Calculate the number of batches, rounded up
+    std::cout << "Number of batches: " << num_batches << std::endl;
     for (int i = 0; i < num_batches; i++ ) {
         // inference_batch is a vector of size batch_size containing cv::mats that we will infer on
         inference_batch.clear(); // clear out the last batch
         for (int b = batch_size*i; b < batch_size*(i+1); b++) {
-            inference_batch.push_back(dnnInput[b].clone());
+            if(b < dnnInput.size()) { // Do not add if we cannot make a full batch
+                inference_batch.push_back(dnnInput[b].clone());
+            }
         }
 
         std::cout << "Inferring on batch #" << i << " containing " << inference_batch.size() << " images\n";
 
         // do the inference on inference_batch. 
-        network->update(inference_batch, batch_size); 
+        network->update(inference_batch, inference_batch.size()); 
 
         // The raw bounding boxes are saved as a vector of vectors. 
         // The outer vector is a vector of bounding boxes of each batch, indexed by the batch you put in (e.g. index 0 was the first batch

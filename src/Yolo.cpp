@@ -143,6 +143,14 @@ int Yolo::computeDetections(Yolo::detection *dets, int &ndets, int netw, int net
             dets[count].bbox = get_yolo_box(predictions, bias_h, mask_h[n], box_index, col, row, lw, lh, netw, neth, lw*lh);
             dets[count].objectness = objectness;
             dets[count].classes = classes;
+
+            // Copy original Yolo BB values to Yolo::box raw_x, raw_y, etc.
+            dets[count].bbox.raw_x = dets[count].bbox.x;
+            dets[count].bbox.raw_y = dets[count].bbox.y;
+            dets[count].bbox.raw_w = dets[count].bbox.w;
+            dets[count].bbox.raw_h = dets[count].bbox.h;
+
+            // Do probability calculations per class
             for(j = 0; j < classes; ++j){
                 int class_index = entry_index(0, n*lw*lh + i, 4 + 1 + j, classes, input_dim, output_dim);
                 float prob = objectness*predictions[class_index];

@@ -126,10 +126,15 @@ void Yolo3Detection::postprocess(const int bi, const bool mAP){
         if(obj_class >= 0) {
             // In this new tk:dnn:box, set the raw floating point bbox values
             tk::dnn::box res;
-            res.raw_x = x0;
-            res.raw_y = y0;
-            res.raw_w = x1 - x0;
-            res.raw_h = y1 - y0;
+            // Old try, delete later
+            // res.raw_x = x0;
+            // res.raw_y = y0;
+            // res.raw_w = x1 - x0;
+            // res.raw_h = y1 - y0;
+            res.raw_x = (b.raw_x-b.raw_w/2.);
+            res.raw_y = (b.raw_x+b.raw_w/2.);
+            res.raw_w = (b.raw_y-b.raw_h/2.);
+            res.raw_h = (b.raw_y+b.raw_h/2.);
 
             // convert to yolo square image coords
             x0 = x_ratio*x0;

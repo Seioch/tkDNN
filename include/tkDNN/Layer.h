@@ -604,6 +604,7 @@ class Yolo : public Layer {
 public:
     struct box {
         float x, y, w, h;
+        float raw_x, raw_y, raw_w, raw_h;
     };
 
     struct detection{

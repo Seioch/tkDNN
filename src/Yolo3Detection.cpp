@@ -124,13 +124,20 @@ void Yolo3Detection::postprocess(const int bi, const bool mAP){
         }
 
         if(obj_class >= 0) {
-            // convert to image coords
+            // In this new tk:dnn:box, set the raw floating point bbox values
+            tk::dnn::box res;
+            res.raw_x = x0;
+            res.raw_y = y0;
+            res.raw_w = x1 - x0;
+            res.raw_h = y1 - y0;
+
+            // convert to yolo square image coords
             x0 = x_ratio*x0;
             x1 = x_ratio*x1;
             y0 = y_ratio*y0;
             y1 = y_ratio*y1;
               
-            tk::dnn::box res;
+            
             res.cl = obj_class;
             res.prob = prob;
             res.x = x0;
@@ -138,11 +145,7 @@ void Yolo3Detection::postprocess(const int bi, const bool mAP){
             res.w = x1 - x0;
             res.h = y1 - y0;
 
-            // In this new tk:dnn:box, also set the raw floating point bbox values
-            res.raw_x = b.x;
-            res.raw_y = b.y;
-            res.raw_w = b.w;
-            res.raw_h = b.h;
+
             if(mAP)
                 for(int c=0; c<classes; c++) 
                     res.probs.push_back(dets[j].prob[c]);

@@ -112,7 +112,7 @@ int main(int argc, char* argv[]){
         std::cout << "Number of BBs: " << boxes[0].size() << std::endl;
         for (int i = 0; i < boxes[0].size(); i++) {
             std::cout << "Box " << i << " contents: \n";
-            boxes[0][i].print();
+            boxes[0][i].printUnscaled();
         }
     }
 

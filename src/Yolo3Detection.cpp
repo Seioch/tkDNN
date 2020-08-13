@@ -108,6 +108,7 @@ void Yolo3Detection::postprocess(const int bi, const bool mAP){
     // fill detected
     detected.clear();
     for(int j=0; j<nDets; j++) {
+        // This box b seems to be the raw bbox from Yolo
         tk::dnn::Yolo::box b = dets[j].bbox;
         int x0   = (b.x-b.w/2.);
         int x1   = (b.x+b.w/2.);
@@ -136,6 +137,12 @@ void Yolo3Detection::postprocess(const int bi, const bool mAP){
             res.y = y0;
             res.w = x1 - x0;
             res.h = y1 - y0;
+
+            // In this new tk:dnn:box, also set the raw floating point bbox values
+            res.raw_x = b.x;
+            res.raw_y = b.y;
+            res.raw_w = b.w;
+            res.raw_h = b.h;
             if(mAP)
                 for(int c=0; c<classes; c++) 
                     res.probs.push_back(dets[j].prob[c]);

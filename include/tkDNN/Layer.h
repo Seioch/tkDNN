@@ -577,12 +577,17 @@ public:
 struct box {
     int cl;
     float x, y, w, h;
+    float raw_x, raw_y, raw_w, raw_h;
     float prob;
     std::vector<float> probs;
 
     void print() 
     {
         std::cout<<"x: "<<x<<"\ty: "<<y<<"\tw: "<<w<<"\th: "<<h<<"\tcl: "<<cl<<"\tprob: "<<prob<<std::endl;
+    }
+
+    void printUnscaled() {
+        std::cout<<"x: "<<raw_x<<"\ty: "<<raw_y<<"\tw: "<<raw_w<<"\th: "<<raw_h<<"\tcl: "<<cl<<"\tprob: "<<prob<<std::endl;
     }
 };
 struct sortable_bbox {

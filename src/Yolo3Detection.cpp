@@ -124,6 +124,7 @@ void Yolo3Detection::postprocess(const int bi, const bool mAP){
         }
 
         if(obj_class >= 0) {
+            tk::dnn::box res;
             // convert to yolo square image coords
             x0 = x_ratio*x0;
             x1 = x_ratio*x1;

@@ -112,8 +112,6 @@ int main(int argc, char* argv[]){
         std::cout << "Number of BBs: " << boxes[0].size() << std::endl;
         //for (int i = 0; i < boxes[0].size(); i++) {
         for (int i = 0; i < 1; i++) {
-            std::cout << "Box 1 bbox " << i << " unscaled contents: \n";
-            boxes[0][i].printUnscaled();
             std::cout << "Box 1 bbox " << i << " scaled contents: \n";
             boxes[0][i].print();
         }

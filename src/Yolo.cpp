@@ -58,7 +58,7 @@ int entry_index(int batch, int location, int entry,
     return batch*output_dim.tot() + n*input_dim.w*input_dim.h*(4+classes+1) +
            entry*input_dim.w*input_dim.h + loc;
 }
-
+// get_yolo_box(predictions, bias_h, mask_h[n], box_index, col, row, lw, lh, netw, neth, lw*lh);
 Yolo::box get_yolo_box(float *x, float *biases, int n, int index, int i, int j, int lw, int lh, int w, int h, int stride) {
     Yolo::box b;
     b.x = (i + x[index + 0*stride]) / lw;
@@ -66,11 +66,6 @@ Yolo::box get_yolo_box(float *x, float *biases, int n, int index, int i, int j, 
     b.w = exp(x[index + 2*stride]) * biases[2*n]   / w;
     b.h = exp(x[index + 3*stride]) * biases[2*n+1] / h;
 
-    // Raw floating point values
-    b.raw_x = (i + x[index]) / lw;
-    b.raw_y = (i + x[index]) / lh;
-    b.raw_w = exp(x[index]) * biases[2*n]   / w;
-    b.raw_h = exp(x[index]) * biases[2*n+1] / h;
     return b;
 }
 
@@ -149,12 +144,6 @@ int Yolo::computeDetections(Yolo::detection *dets, int &ndets, int netw, int net
             dets[count].bbox = get_yolo_box(predictions, bias_h, mask_h[n], box_index, col, row, lw, lh, netw, neth, lw*lh);
             dets[count].objectness = objectness;
             dets[count].classes = classes;
-
-            // Copy original Yolo BB values to Yolo::box raw_x, raw_y, etc.
-            // dets[count].bbox.raw_x = dets[count].bbox.x;
-            // dets[count].bbox.raw_y = dets[count].bbox.y;
-            // dets[count].bbox.raw_w = dets[count].bbox.w;
-            // dets[count].bbox.raw_h = dets[count].bbox.h;
 
             // Do probability calculations per class
             for(j = 0; j < classes; ++j){

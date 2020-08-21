@@ -65,6 +65,12 @@ Yolo::box get_yolo_box(float *x, float *biases, int n, int index, int i, int j, 
     b.y = (j + x[index + 1*stride]) / lh;
     b.w = exp(x[index + 2*stride]) * biases[2*n]   / w;
     b.h = exp(x[index + 3*stride]) * biases[2*n+1] / h;
+
+    // Raw floating point values
+    b.raw_x = (i + x[index]) / lw;
+    b.raw_y = (i + x[index]) / lh;
+    b.raw_w = exp(x[index]) * biases[2*n]   / w;
+    b.raw_h = exp(x[index]) * biases[2*n+1] / h;
     return b;
 }
 
@@ -145,10 +151,10 @@ int Yolo::computeDetections(Yolo::detection *dets, int &ndets, int netw, int net
             dets[count].classes = classes;
 
             // Copy original Yolo BB values to Yolo::box raw_x, raw_y, etc.
-            dets[count].bbox.raw_x = dets[count].bbox.x;
-            dets[count].bbox.raw_y = dets[count].bbox.y;
-            dets[count].bbox.raw_w = dets[count].bbox.w;
-            dets[count].bbox.raw_h = dets[count].bbox.h;
+            // dets[count].bbox.raw_x = dets[count].bbox.x;
+            // dets[count].bbox.raw_y = dets[count].bbox.y;
+            // dets[count].bbox.raw_w = dets[count].bbox.w;
+            // dets[count].bbox.raw_h = dets[count].bbox.h;
 
             // Do probability calculations per class
             for(j = 0; j < classes; ++j){
